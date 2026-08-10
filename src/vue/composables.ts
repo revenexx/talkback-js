@@ -168,11 +168,15 @@ function useChannel(tb: Talkback, resolveName: () => string | null, options: Bas
 /**
  * The ACTION channel for a topic — a grid watching every instance of a resource kind.
  *
+ * THE TOPIC INCLUDES THE ACTION. One action is one channel and Centrifugo has no
+ * wildcards, so a grid watching three actions takes three subscriptions — a three-segment
+ * topic here would build the resource KIND channel, which is a valid name the bridge never
+ * publishes to, and every `on` below would then match nothing.
+ *
  * ```ts
- * useTalkbackTopic('revenexx.integrations.run', {
- *   on: ['started', 'finished', 'failed'],
- *   handler: () => load(true),
- * })
+ * for (const action of ['started', 'finished', 'failed'] as const) {
+ *   useTalkbackTopic(`revenexx.integrations.run.${action}`, { handler: () => load(true) })
+ * }
  * ```
  */
 export function useTalkbackTopic(topic: MaybeRefOrGetter<string>, options: BaseOptions = {}): ChannelSubscription {

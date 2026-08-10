@@ -11,7 +11,10 @@
  * });
  * tb.connect();
  *
- * tb.topic('revenexx.integrations.run').listen('finished', e => refetch(e.topic_id));
+ * // The topic includes the ACTION: one action is one channel, and Centrifugo has no
+ * // wildcards, so `revenexx.integrations.run` would build the resource KIND channel —
+ * // a valid name the bridge never publishes to.
+ * tb.topic('revenexx.integrations.run.finished').listen('finished', e => refetch(e.topic_id));
  * ```
  *
  * Three things this does that an application otherwise forgets, each written up where it

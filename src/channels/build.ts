@@ -65,7 +65,12 @@ export function streamChannel(tenant: string, streamId: string): Channel {
 
 /**
  * `tenant:<tenant>.<vendor>.<app>.<entity>` — a resource KIND, no specific instance.
- * This is the channel a grid subscribes to.
+ *
+ * NOT what a grid subscribes to, and the distinction is the one this package exists to
+ * make hard to get wrong: the bridge publishes to the ACTION channel (segment 5 present),
+ * Centrifugo has no wildcards, and a name that is a prefix of another is simply a
+ * different channel. A grid takes one `tenantActionChannel` per action it cares about.
+ * This form is for ad-hoc publishes that address a collection.
  */
 export function tenantChannel(tenant: string, vendor: string, app: string, entity: string): Channel {
   checkResourceParts(tenant, vendor, app, entity);
