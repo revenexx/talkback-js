@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check (biome · tsc · vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # changeset status compares against origin/main
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - name: biome · tsc · vitest
+        run: npm run check
+
+      # Explicit, in addition to prepublishOnly: devkit 0.2.0 shipped an empty
+      # tarball because nothing built before the publish.
+      - run: npm run build
+
+      # `changeset-release/main` is the branch the release workflow opens; its whole
+      # purpose is to CONSUME the changesets, so it has none left by definition.
+      - if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
+        name: This PR carries a changeset
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          npx changeset status --since=origin/main
