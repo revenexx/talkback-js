@@ -17,7 +17,7 @@
     "type": "git",
     "url": "git+https://github.com/revenexx/talkback-js.git"
   },
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "author": "revenexx GmbH",
   "type": "module",
   "exports": {
