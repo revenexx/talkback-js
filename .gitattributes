@@ -1,0 +1,9 @@
+# LF everywhere, and this is a gate rather than a preference.
+#
+# src/testing/channel-vectors.json and src/channels/grammar.ts are the client half of a
+# contract whose other half is Go, in the private repository revenexx/talkback. A CI job
+# there checks this repository out, compares channel-vectors.json BYTE FOR BYTE against
+# what the Go generator produces, and reads grammar.ts line by line. Under
+# core.autocrlf=true a checkout would rewrite both, and that comparison would fail for a
+# reason that has nothing to do with the grammar it guards.
+* text=auto eol=lf
