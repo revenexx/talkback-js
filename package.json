@@ -1,6 +1,6 @@
 {
   "name": "@revenexx/talkback-js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The client half of the Talkback contract: the channel grammar, a facade client, a BFF token route factory, an Echo-shaped browser client and Vue composables.",
   "keywords": [
     "revenexx",
