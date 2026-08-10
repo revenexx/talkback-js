@@ -1,0 +1,70 @@
+name: Release @revenexx/talkback-js
+
+# THE FILENAME IS NOT FREE. The npmjs trusted-publisher (OIDC) binding is keyed to
+# the repository PLUS this workflow's filename, so renaming the file means
+# reconfiguring the trusted publisher on npmjs.com.
+#
+# The recommended Changesets flow:
+#   push to main with pending changesets       -> open/update the "Version Packages" PR
+#   "Version Packages" PR merged, none left    -> changeset publish (npm + git tag)
+#
+# `publishConfig.provenance` IS set, unlike in revenexx/talkback where this package
+# used to live: Sigstore attestation requires a PUBLIC source repository and that one
+# is private. This repository is public, so the attestation is available and worth
+# having. OIDC trusted publishing needs no NPM_TOKEN either way.
+#
+# It runs under a GitHub App token rather than GITHUB_TOKEN because PRs opened by
+# GITHUB_TOKEN do not trigger required checks, which would leave the "Version
+# Packages" PR permanently unmergeable. The release-bot credentials are ORG-level
+# secrets (REVENEXX_RELEASEBOT_APP_ID / _APP_PRIVATE_KEY) — nothing repo-local to set
+# up, but the names are the org's, not the action's defaults.
+
+on:
+  push:
+    branches: [main]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write # push the version branch and the release tag
+  pull-requests: write # open/update the "Version Packages" PR
+  id-token: write # OIDC trusted publishing + provenance — no NPM_TOKEN needed
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.REVENEXX_RELEASEBOT_APP_ID }}
+          private-key: ${{ secrets.REVENEXX_RELEASEBOT_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm install -g npm@^11.5.1 # OIDC needs npm >= 11.5.1
+
+      - run: npm ci
+
+      # `files` is ["dist", "LICENSE"], so an unbuilt tree publishes a tarball with
+      # no dist at all — which is exactly how devkit 0.2.0 shipped. `prepublishOnly`
+      # is the real guard (it runs inside `changeset publish`); this step surfaces a
+      # broken build HERE rather than mid-publish.
+      - run: npm run build
+
+      - name: Create release PR or publish
+        uses: changesets/action@v1
+        with:
+          publish: npm run release
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
