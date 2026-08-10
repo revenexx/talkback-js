@@ -387,10 +387,10 @@ names yourself.
 
 A client has to be able to *build* a channel name from what it already has — and **a
 divergence is silent**. The client subscribes to a channel nobody publishes to, and
-nothing anywhere reports an error. So the grammar does not live in a consumer where it
-would be a reimplementation nobody can test against the server's: it lives here, next to
-the service, and a test in the service's own suite reads `src/channels/grammar.ts` and
-fails the build when the two disagree by a byte.
+nothing anywhere reports an error. So the grammar is not reimplemented per consumer,
+where each copy could quietly drift from the server's and from every other: it is
+authored once, on the Go side, and vendored here — see "Where the grammar comes from"
+below for how a mismatch still fails a build.
 
 It is also **not** a `laravel-echo` connector. It borrows Echo's shape and has no Pusher
 semantics — no `socket_id`, no `auth` endpoint format — and no PHP side. The reason
@@ -423,7 +423,9 @@ half is Go, in the private repository `revenexx/talkback`. The 52 grammar vector
 `src/testing/channel-vectors.json` are **generated there** from the vector table in
 `internal/channels/channels_test.go`; the copy in this repository is vendored.
 
-A CI job in `revenexx/talkback` checks this repository out and compares both copies
-byte for byte, then runs its Go constants against the regexes in
-`src/channels/grammar.ts`. So a change to the grammar made only here does not fail
-here — it fails there. Grammar changes start on the Go side.
+The intent is for a CI job in `revenexx/talkback` to check this repository out, compare
+both copies byte for byte, and run its Go constants against the regexes in
+`src/channels/grammar.ts` — so a change to the grammar made only here fails there, not
+here. That job is not wired up yet; until it is, treat the vendored copies as
+authoritative only once the Go side has produced them, and start grammar changes on the
+Go side regardless.
