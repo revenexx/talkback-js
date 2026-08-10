@@ -1,0 +1,101 @@
+{
+  "name": "@revenexx/talkback-js",
+  "version": "0.0.0",
+  "description": "The client half of the Talkback contract: the channel grammar, a facade client, a BFF token route factory, an Echo-shaped browser client and Vue composables.",
+  "keywords": [
+    "revenexx",
+    "talkback",
+    "realtime",
+    "centrifugo",
+    "websocket"
+  ],
+  "homepage": "https://github.com/revenexx/talkback#readme",
+  "bugs": {
+    "url": "https://github.com/revenexx/talkback/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/revenexx/talkback.git",
+    "directory": "clients/js"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "revenexx GmbH",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./channels": {
+      "types": "./dist/channels/index.d.ts",
+      "import": "./dist/channels/index.js",
+      "require": "./dist/channels/index.cjs"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js",
+      "require": "./dist/server/index.cjs"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/vue/index.js",
+      "require": "./dist/vue/index.cjs"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js",
+      "require": "./dist/testing/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "lint": "biome check src",
+    "format": "biome format --write src",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "prepublishOnly": "npm run build",
+    "release": "changeset publish"
+  },
+  "peerDependencies": {
+    "centrifuge": ">=5.2.0",
+    "vitest": ">=2.0.0",
+    "vue": ">=3.4.0"
+  },
+  "peerDependenciesMeta": {
+    "vitest": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "@changesets/cli": "^2.31.0",
+    "@types/node": "^24.0.0",
+    "centrifuge": "^5.4.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.1.0",
+    "vue": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=20.3.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts"
+}

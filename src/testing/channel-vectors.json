@@ -1,0 +1,424 @@
+{
+  "$comment": "GENERATED from the vector table in internal/channels/channels_test.go. Do not edit: run `make vectors`.",
+  "version": 1,
+  "count": 52,
+  "maxChannelLength": 255,
+  "vectors": [
+    {
+      "name": "user with the shortest legal tenant and id",
+      "channel": "user:abc.7",
+      "tenant": "abc",
+      "namespace": "user",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "user with a Zitadel numeric id",
+      "channel": "user:acme-eu.221234567890123456",
+      "tenant": "acme-eu",
+      "namespace": "user",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "user with an uppercase Crockford ULID",
+      "channel": "user:acme-eu.01JQ8ZK9V4ABCDEFGHJKMNPQRS",
+      "tenant": "acme-eu",
+      "namespace": "user",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "user with a hyphenated UUID",
+      "channel": "user:acme-eu.f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "tenant": "acme-eu",
+      "namespace": "user",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "user with the longest legal tenant and an underscored id",
+      "channel": "user:abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc.usr_6f0a1b",
+      "tenant": "abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc",
+      "namespace": "user",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "stream with a ULID",
+      "channel": "stream:acme-eu.01JQ8ZK9V4ABCDEFGHJKMNPQRS",
+      "tenant": "acme-eu",
+      "namespace": "stream",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "stream with a short id",
+      "channel": "stream:acme-eu.s1",
+      "tenant": "acme-eu",
+      "namespace": "stream",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "tenant resource kind, four segments",
+      "channel": "tenant:acme-eu.revenexx.integrations.run",
+      "tenant": "acme-eu",
+      "namespace": "tenant",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "tenant resource instance, five segments",
+      "channel": "tenant:acme-eu.revenexx.integrations.run.01JQ8ZK9V4ABCDEFGHJKMNPQRS",
+      "tenant": "acme-eu",
+      "namespace": "tenant",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "tenant with underscores in the topic segments",
+      "channel": "tenant:acme-eu.revenexx.studio_integrations.workflow_run",
+      "tenant": "acme-eu",
+      "namespace": "tenant",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "tenant with a bigint id",
+      "channel": "tenant:acme-eu.revenexx.console.app.4711",
+      "tenant": "acme-eu",
+      "namespace": "tenant",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "tenant action channel, the action in position five",
+      "channel": "tenant:acme-eu.revenexx.products.product.updated",
+      "tenant": "acme-eu",
+      "namespace": "tenant",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "tenant resource channel with a hyphenated uuid",
+      "channel": "tenant:acme-eu.revenexx.products.product.9b2f6c1e-0000-4000-8000-000000000000",
+      "tenant": "acme-eu",
+      "namespace": "tenant",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "presence mirrors the tenant resource kind",
+      "channel": "presence:acme-eu.revenexx.integrations.run",
+      "tenant": "acme-eu",
+      "namespace": "presence",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "presence mirrors the tenant resource instance",
+      "channel": "presence:acme-eu.revenexx.integrations.run.01JQ8ZK9V4",
+      "tenant": "acme-eu",
+      "namespace": "presence",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "site resource, three segments",
+      "channel": "site:acme-eu.flagship-store.cart",
+      "tenant": "acme-eu",
+      "namespace": "site",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "site resource instance, four segments",
+      "channel": "site:acme-eu.flagship-store.order_status.4711",
+      "tenant": "acme-eu",
+      "namespace": "site",
+      "valid": true,
+      "error": null
+    },
+    {
+      "name": "tenant slug with an underscore",
+      "channel": "user:acme_eu.7",
+      "tenant": "acme_eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "tenant slug with uppercase",
+      "channel": "user:Acme-eu.7",
+      "tenant": "Acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "tenant slug shorter than the DNS label minimum",
+      "channel": "user:ac.7",
+      "tenant": "ac",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "tenant slug longer than the DNS label maximum",
+      "channel": "user:abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc.7",
+      "tenant": "abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "tenant slug starting with a hyphen",
+      "channel": "user:-acme.7",
+      "tenant": "-acme",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "tenant slug ending with a hyphen",
+      "channel": "user:acme-.7",
+      "tenant": "acme-",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "wildcard in place of the tenant",
+      "channel": "user:*.7",
+      "tenant": "*",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "user with three segments",
+      "channel": "user:acme-eu.abc.def",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "user with no id at all",
+      "channel": "user:acme-eu",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "user with an empty id",
+      "channel": "user:acme-eu.",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "user with an empty name",
+      "channel": "user:",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "tenant with only three segments",
+      "channel": "tenant:acme-eu.revenexx.integrations",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "tenant with six segments",
+      "channel": "tenant:acme-eu.revenexx.integrations.run.a.b",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "site with only two segments",
+      "channel": "site:acme-eu.flagship-store",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "site with five segments",
+      "channel": "site:acme-eu.flagship-store.cart.a.b",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "presence with the loose two-segment shape from the ADR",
+      "channel": "presence:acme-eu.canvas",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "entity with uppercase",
+      "channel": "tenant:acme-eu.revenexx.integrations.Run",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "app with a hyphen",
+      "channel": "tenant:acme-eu.revenexx.my-app.run",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "entity starting with a digit",
+      "channel": "tenant:acme-eu.revenexx.integrations.2run",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "topic segment over the length cap",
+      "channel": "tenant:acme-eu.revenexx.integrations.abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "id starting with an underscore",
+      "channel": "user:acme-eu._abc",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "id containing a dot adds a segment",
+      "channel": "tenant:acme-eu.revenexx.integrations.run.ab.cd",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "id containing a slash",
+      "channel": "user:acme-eu.ab/cd",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "id over the length cap",
+      "channel": "user:acme-eu.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "id containing the Centrifugo user boundary",
+      "channel": "user:acme-eu.abc#def",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "id containing a second colon",
+      "channel": "user:acme-eu.abc:def",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "site slug with an underscore",
+      "channel": "site:acme-eu.flagship_store.cart",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "site slug with uppercase",
+      "channel": "site:acme-eu.Flagship.cart",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "site slug shorter than the DNS label minimum",
+      "channel": "site:acme-eu.ab.cart",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "malformed"
+    },
+    {
+      "name": "no namespace boundary at all",
+      "channel": "plainchannel",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "unknown_namespace"
+    },
+    {
+      "name": "empty channel",
+      "channel": "",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "unknown_namespace"
+    },
+    {
+      "name": "a namespace that is not one of the five",
+      "channel": "chat:acme-eu.x",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "unknown_namespace"
+    },
+    {
+      "name": "dollar-prefixed user channel",
+      "channel": "$user:acme-eu.abc",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "unknown_namespace"
+    },
+    {
+      "name": "dollar-prefixed tenant channel",
+      "channel": "$tenant:acme-eu.revenexx.integrations.run",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "unknown_namespace"
+    },
+    {
+      "name": "channel over the length limit",
+      "channel": "user:acme-eu.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "tenant": "acme-eu",
+      "namespace": null,
+      "valid": false,
+      "error": "too_long"
+    }
+  ]
+}
