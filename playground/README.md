@@ -4,11 +4,17 @@ A minimal Nuxt application that runs `@revenexx/talkback-js` against the local s
 one BFF route and one page, which is the smallest thing that exercises both halves.
 
 The stack itself (Valkey, Centrifugo, NATS, facade, bridge, devstub) lives in
-`revenexx/talkback`, a separate, private repository:
+`revenexx/talkback`, a separate, private repository — start it there, in its own
+terminal:
 
 ```sh
 cd /path/to/talkback && make dev
-cd .. && npm run build
+```
+
+Then, from the root of this repository, in another terminal:
+
+```sh
+npm run build                                  # here
 cd playground && npm install && npm run dev
 ```
 
