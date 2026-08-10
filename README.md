@@ -415,3 +415,15 @@ Releases go through Changesets: add one with `npx changeset`, and merging the "V
 Packages" PR publishes to npm over OIDC trusted publishing. The publishing workflow's
 *filename* is bound to the trusted-publisher configuration on npmjs and is not free to
 change.
+
+## Where the grammar comes from
+
+The channel grammar in `src/channels/` is the client half of a contract whose other
+half is Go, in the private repository `revenexx/talkback`. The 52 grammar vectors in
+`src/testing/channel-vectors.json` are **generated there** from the vector table in
+`internal/channels/channels_test.go`; the copy in this repository is vendored.
+
+A CI job in `revenexx/talkback` checks this repository out and compares both copies
+byte for byte, then runs its Go constants against the regexes in
+`src/channels/grammar.ts`. So a change to the grammar made only here does not fail
+here — it fails there. Grammar changes start on the Go side.

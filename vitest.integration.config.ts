@@ -1,13 +1,14 @@
 import { defineConfig } from 'vitest/config';
 
-// The integration suites, run against a live stack:
+// The integration suites, run against a live stack. The stack lives in
+// revenexx/talkback, which is a separate repository:
 //
-//   cd ../.. && make dev        # Valkey, Centrifugo, NATS, facade, bridge, devstub
-//   cd clients/js && npm run test:integration
+//   cd /path/to/talkback && make dev   # Valkey, Centrifugo, NATS, facade, bridge, devstub
+//   npm run test:integration           # here
 //
 // Base URLs come from TALKBACK_TEST_* with localhost defaults, the same convention
 // the Go integration tests use (T5.2). They are a separate config rather than a
-// tag so that `npm test` — and therefore the js CI job — never depends on Docker.
+// tag so that `npm test` — and therefore the ci job — never depends on Docker.
 export default defineConfig({
   test: {
     globals: false,
