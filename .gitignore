@@ -1,0 +1,10 @@
+# Everything here is generated. `dist/` in particular is NOT committed: the npm
+# tarball is built by `prepublishOnly` and by the publish workflow, and a committed
+# copy would go stale in exactly the window where it is hardest to notice.
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vitest-cache/
+.nuxt/
+.output/
