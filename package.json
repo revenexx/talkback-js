@@ -9,14 +9,13 @@
     "centrifugo",
     "websocket"
   ],
-  "homepage": "https://github.com/revenexx/talkback#readme",
+  "homepage": "https://github.com/revenexx/talkback-js#readme",
   "bugs": {
-    "url": "https://github.com/revenexx/talkback/issues"
+    "url": "https://github.com/revenexx/talkback-js/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/revenexx/talkback.git",
-    "directory": "clients/js"
+    "url": "git+https://github.com/revenexx/talkback-js.git"
   },
   "license": "SEE LICENSE IN LICENSE",
   "author": "revenexx GmbH",
@@ -93,7 +92,8 @@
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
