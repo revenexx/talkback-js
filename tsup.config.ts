@@ -4,7 +4,7 @@ import { defineConfig } from 'tsup';
 // dependencies OPTIONAL. `vue` is imported statically by src/vue/, `vitest` by
 // src/testing/, and neither is reachable from src/index.ts, so a consumer that
 // imports only the browser client never resolves either. That is the same
-// arrangement components/integrations/devkit uses for its ./testing entry.
+// arrangement a sibling package uses for its ./testing entry.
 //
 // It is also why src/testing/channel-vectors.json lives under the testing entry:
 // esbuild inlines the JSON into whichever bundle imports it, and 52 grammar

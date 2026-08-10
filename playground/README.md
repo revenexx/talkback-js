@@ -18,11 +18,17 @@ npm run build                                  # here
 cd playground && npm install && npm run dev
 ```
 
-Then publish into the stream channel the page is watching:
+Then publish into the stream channel the page is watching. The playground itself has no
+token endpoint of its own beyond the BFF routes under `playground/server/routes/bff/` —
+mint a token through `POST /bff/talkback-token` first, then use it to publish:
 
 ```sh
+TOKEN=$(curl -s localhost:3000/bff/talkback-token \
+  -H 'content-type: application/json' \
+  -d '{"channels":["stream:acme-eu.demo"]}' | jq -r .token)
+
 curl -s localhost:8880/v1/publish \
-  -H "authorization: Bearer $(hack/token.sh)" \
+  -H "authorization: Bearer $TOKEN" \
   -H 'x-revenexx-tenant: acme-eu' \
   -H 'content-type: application/json' \
   -d '{"channel":"stream:acme-eu.demo","data":{"line":"hello"}}'

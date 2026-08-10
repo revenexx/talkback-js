@@ -10,6 +10,6 @@
   },
   // tsup.config.ts is deliberately absent: tsup's own .d.ts references `./types.cts`
   // and `@swc/core`, neither of which it ships, so including it fails the typecheck on
-  // somebody else's types. devkit leaves it out for the same reason.
+  // somebody else's types. A sibling package leaves it out for the same reason.
   "include": ["src", "vitest.config.ts", "vitest.integration.config.ts"]
 }

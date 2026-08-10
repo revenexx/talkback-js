@@ -57,9 +57,9 @@ jobs:
       - run: npm ci
 
       # `files` is ["dist", "LICENSE"], so an unbuilt tree publishes a tarball with
-      # no dist at all — which is exactly how devkit 0.2.0 shipped. `prepublishOnly`
-      # is the real guard (it runs inside `changeset publish`); this step surfaces a
-      # broken build HERE rather than mid-publish.
+      # no dist at all — which is exactly how a sibling package once shipped.
+      # `prepublishOnly` is the real guard (it runs inside `changeset publish`); this
+      # step surfaces a broken build HERE rather than mid-publish.
       - run: npm run build
 
       - name: Create release PR or publish

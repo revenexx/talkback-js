@@ -28,7 +28,7 @@ jobs:
       - name: biome · tsc · vitest
         run: npm run check
 
-      # Explicit, in addition to prepublishOnly: devkit 0.2.0 shipped an empty
+      # Explicit, in addition to prepublishOnly: a sibling package once shipped an empty
       # tarball because nothing built before the publish.
       - run: npm run build
 
