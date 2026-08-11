@@ -32,9 +32,21 @@ jobs:
       # tarball because nothing built before the publish.
       - run: npm run build
 
+      # Two exemptions, both about branches that cannot reasonably carry a changeset.
+      #
       # `changeset-release/main` is the branch the release workflow opens; its whole
       # purpose is to CONSUME the changesets, so it has none left by definition.
-      - if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
+      #
+      # `dependabot/*` is every dependency bump. Each one touches package.json and
+      # package-lock.json, so without this the gate fires on all of them — and a
+      # devDependency reaches no consumer, since `files` is ["dist", "LICENSE"]. The
+      # exemption is keyed to the BRANCH rather than `github.actor` on purpose: a human
+      # pushing a fix onto a Dependabot branch flips `actor` to that human, and the gate
+      # would start firing for a reason nobody would connect to the push.
+      #
+      # It follows that a bump touching peerDependencies needs a changeset written by
+      # hand. Peers are part of the package's promise; devDependencies are not.
+      - if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main' && !startsWith(github.head_ref, 'dependabot/')
         name: This PR carries a changeset
         run: |
           git fetch origin main:refs/remotes/origin/main

@@ -96,6 +96,24 @@ Publishing uses npm OIDC trusted publishing, so there is no `NPM_TOKEN`. The bin
 keyed to this repository **plus the workflow filename**, which is why `publish.yml` keeps
 its name.
 
+## Dependency updates
+
+Dependabot runs weekly over three things: the package's own dev and peer dependencies,
+the Nuxt playground, and the pinned GitHub Actions. Minor and patch bumps arrive grouped;
+a **major** always arrives on its own, because for `centrifuge`, `vue` and `vitest` a
+major is a decision about what this package supports, and for `typescript` or `tsup` it
+changes the emitted `dist`.
+
+**Dependabot pull requests are exempt from the changeset gate.** A devDependency reaches
+no consumer — `files` is `["dist", "LICENSE"]` — so demanding a changeset for every bump
+would mean an empty one every week. `ci.yml` keys the exemption to the `dependabot/*`
+branch name rather than the actor, so pushing a fix onto one of those branches yourself
+does not suddenly re-arm the gate.
+
+The exception is worth remembering, because nothing enforces it: **`peerDependencies` are
+consumer-visible.** If a bump ever moves a peer range, write the changeset by hand. A peer
+floor is part of what the package promises; a devDependency is not.
+
 ## Changing the channel grammar
 
 The grammar in `src/channels/` is one half of a contract whose other half is Go, in

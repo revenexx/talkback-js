@@ -1,0 +1,113 @@
+version: 2
+
+# Follows revenexx/talkback's arrangement — weekly, grouped, `build` for dependencies
+# and `cicd` for actions, matching this repository's commit types. What differs is the
+# grouping, which is tuned to a published library rather than a deployed service.
+#
+# ONE THING IS NOT IN THIS FILE and has to stay true in `ci.yml`: every npm bump here
+# touches package.json and package-lock.json, so the changeset gate fires on every
+# Dependabot pull request. `ci.yml` exempts `dependabot/*` branches from that gate,
+# because devDependencies never reach the tarball — `files` is ["dist", "LICENSE"].
+# Delete that exemption and every Dependabot PR turns red.
+#
+# THE EXCEPTION TO THAT, worth knowing before waving a bump through: peerDependencies
+# ARE consumer-visible. Dependabot does not normally move a peer range, but if one ever
+# arrives in a PR, it needs a changeset written by hand — a peer floor is part of what
+# the package promises.
+
+updates:
+  # The package itself. It has NO runtime `dependencies` at all: `centrifuge`, `vue` and
+  # `vitest` are peers, and everything else is build or test tooling.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "build"
+    open-pull-requests-limit: 5
+    groups:
+      # THE IMPORTANT ONE. These three are simultaneously devDependencies and
+      # peerDependencies, and the two roles pull in different directions. The
+      # devDependency is what the suite tests against; the peer range is what consumers
+      # are allowed to bring. Bumping the devDependency does NOT move the peer floor,
+      # which is exactly right — testing against a newer version while continuing to
+      # support an older one is the point of the split.
+      #
+      # Minor and patch travel together. A MAJOR falls out into its own pull request
+      # (this group only claims minor and patch), because for these three a major is a
+      # decision about what the package supports, not a routine update:
+      #   centrifuge — the transport and the token contract
+      #   vue        — the reactivity model the composables are written against
+      #   vitest     — the test toolchain, and currently the fix for five advisories
+      peers:
+        patterns:
+          - "centrifuge"
+          - "vue"
+          - "vitest"
+        update-types:
+          - "minor"
+          - "patch"
+      # Build and release tooling. None of it ships: `files` is ["dist", "LICENSE"], and
+      # a consumer installing this package never resolves any of these. Grouped so a
+      # week of tooling noise is one review rather than five.
+      #
+      # Majors fall out individually here too, and that is not symmetry for its own
+      # sake — a TypeScript or tsup major changes the emitted `dist`, which is the
+      # artifact consumers actually get.
+      tooling:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "centrifuge"
+          - "vue"
+          - "vitest"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # The Nuxt playground. Private, never published, and the only place the client runs as
+  # a real consumer in a real framework — so letting it rot costs the one integration
+  # signal it exists to give.
+  #
+  # Kept in its own entry rather than a second `directories:` path so it gets its own
+  # limit and its own group: Nuxt moves fast, and playground noise must not crowd out a
+  # bump to the package itself.
+  #
+  # `@revenexx/talkback-js` resolves as `file:..` here. Dependabot leaves `file:`
+  # specifiers alone, so the playground always builds against the working tree.
+  - package-ecosystem: "npm"
+    directory: "/playground"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "build"
+    open-pull-requests-limit: 3
+    groups:
+      playground:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Keep GitHub Actions versions fresh. Grouped because the two workflows pin five
+  # actions between them (checkout, setup-node, create-github-app-token, changesets) and
+  # separate pull requests for each would drown the queue.
+  #
+  # The `cicd` prefix matches this repository's commit types — the org's other repos use
+  # `ci`, but the handbook's branch and commit type is `cicd`.
+  #
+  # A bump to a required-check job's action is worth reading rather than merging on
+  # green: `ci.yml`'s job NAME is a required status check, and renaming it silently
+  # stops the check from matching.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "cicd"
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns:
+          - "*"
