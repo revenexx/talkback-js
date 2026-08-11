@@ -35,9 +35,16 @@ not re-export it.
 
 ## Quickstart
 
-Two things have to exist: a **BFF route** that mints tokens against the facade, and a
-**client** in the browser that calls it. The browser never talks to the facade directly
-and never holds a signing key.
+There are **two shapes**, and neither ever puts a signing key in the browser.
+
+**Via a BFF** — a route on your server mints tokens against the facade, and the client
+calls that route over the normal session. Use it when the visitor has no platform login
+(a storefront), when the token's contents have to be decided server-side, or when you
+mint on behalf of somebody else. That is what this quickstart builds.
+
+**Direct** — the browser mints its own token at the facade with the signed-in user's
+Zitadel access token, and there is no BFF route at all. Use it in an application behind
+the platform login. It is one option: see [direct mode](#direct-mode-no-bff-route).
 
 ### 1. Mint tokens on your server
 
@@ -110,6 +117,39 @@ look up, and `host` takes no trailing `/v1`.
 
 One client per application. A second `createTalkback` opens a second WebSocket and mints
 its own connection token.
+
+#### Direct mode: no BFF route
+
+If the signed-in user holds a platform login, the browser can mint its own token. Point
+the two endpoints at the facade and pass the user's access token:
+
+```ts
+const tb = createTalkback({
+  host: 'https://talkback.revenexx.com',
+  tenant: () => tenantSlug.value,
+  userId: () => user.value.id,
+  tokenEndpoint: 'https://talkback.revenexx.com/v1/tokens',
+  subscriptionTokenEndpoint: 'https://talkback.revenexx.com/v1/subscription-tokens',
+  accessToken: () => auth.accessToken.value, // a PROVIDER — it is refreshed while the tab lives
+});
+```
+
+That is the whole change. `accessToken` also switches the request itself: the token goes
+out as `Authorization: Bearer`, the tenant as `X-Revenexx-Tenant` — which the BFF used to
+do — and `credentials` becomes `omit`, because the facade allows every origin and a
+browser refuses credentials mode against a wildcard origin.
+
+**What the facade allows an end user, and what it does not.** It mints **only for the
+caller itself**: the request carries no `user_id` and the facade fills it from the token's
+own `sub`, so naming somebody else is a 403. `roles`, `info` and `override` are refused —
+those exist for a server-side caller that builds the body on a user's behalf. Publishing
+is not available at all; that stays a service scope.
+
+**Requirements.** The user needs a `user` or `admin` role in the Zitadel **user** project.
+A `talkback:*` scope does not substitute for it: those live in the M2M project, and a role
+is only honoured from the project that granted it. An end user may still subscribe to any
+channel of its tenant, exactly as a service caller can — the `user_id` binding prevents
+impersonation, not reading.
 
 ### 3. Listen
 

@@ -31,11 +31,39 @@ export interface TalkbackOptions {
   /** The signed-in user. A provider for the same reason. */
   userId: Provider<string>;
 
-  /** The BFF route built with `createTokenRoute`. */
+  /**
+   * The BFF route built with `createTokenRoute` — or, in DIRECT MODE, the facade's own
+   * `${host}/v1/tokens`. See `accessToken`.
+   */
   tokenEndpoint: string;
 
-  /** The BFF route built with `createSubscriptionTokenRoute`. */
+  /**
+   * The BFF route built with `createSubscriptionTokenRoute` — or, in direct mode,
+   * `${host}/v1/subscription-tokens`.
+   */
   subscriptionTokenEndpoint: string;
+
+  /**
+   * DIRECT MODE: the signed-in user's Zitadel access token. Setting it is what turns the
+   * mint requests from "ask my BFF" into "ask the facade myself".
+   *
+   * It works because the facade admits an END USER at its mint endpoints — a role in the
+   * Zitadel user project, not the `talkback:write` a BFF's service identity holds. Such a
+   * caller may mint only FOR ITSELF, which is what makes it safe from a browser at all,
+   * and also why the request body is unchanged: it carries no `user_id`, so the facade
+   * fills it from the token's own `sub`.
+   *
+   * A PROVIDER, for the same reason `tenant` and `userId` are. The access token is
+   * refreshed while the tab lives, and a connection token is minted again on every
+   * reconnect and every `expire_at` — read once at construction it would go stale in
+   * exactly the long-lived dashboard this package exists for.
+   *
+   * WHEN TO USE WHICH. Direct mode needs the user to hold a platform login, so a
+   * storefront visitor keeps the BFF. A BFF is also the only way to mint on behalf of
+   * SOMEBODY ELSE, and the only place to decide a token's contents server-side — an end
+   * user is refused `roles`, `info` and `override`.
+   */
+  accessToken?: Provider<string>;
 
   /**
    * Channels to carry in the connection token's `subs` claim, so they are subscribed on
@@ -187,13 +215,38 @@ export function createTalkback(options: TalkbackOptions): Talkback {
    * eventually needs a fresh token and `getToken` is simply invoked again. There is
    * deliberately no refresh proxy on the facade.
    */
+  /**
+   * The request a mint goes out as, and the two modes differ in more than a header.
+   *
+   * A BFF route is same-origin and session-based: the cookie is the credential, so
+   * `credentials: 'include'` is the whole authentication and there is no bearer to send.
+   *
+   * The facade is neither. Authorisation is the bearer, and `credentials` MUST NOT be
+   * `include`: the facade answers `Access-Control-Allow-Origin: *` and deliberately never
+   * sends `Access-Control-Allow-Credentials`, because storefronts run on per-tenant custom
+   * domains that cannot be enumerated at config time. A browser refuses that combination
+   * — it would block the response even though the facade answered 200, which is the least
+   * diagnosable failure available. `omit` rather than `same-origin`, so a same-origin
+   * proxy deployment behaves identically to a cross-origin one.
+   *
+   * The tenant header is the other thing the BFF used to do. The facade reads the tenant
+   * from `X-Revenexx-Tenant` and answers 400 when a token authorises several and none is
+   * named, so sending it is not optional for a multi-tenant user.
+   */
+  function mintInit(body: unknown): RequestInit {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const init: RequestInit = { method: 'POST', body: JSON.stringify(body), headers };
+
+    if (!options.accessToken) {
+      return { ...init, credentials: 'include' };
+    }
+    headers.Authorization = `Bearer ${options.accessToken()}`;
+    headers['X-Revenexx-Tenant'] = options.tenant();
+    return { ...init, credentials: 'omit' };
+  }
+
   async function connectionToken(): Promise<string> {
-    const res = await doFetch(options.tokenEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ channels: [...initialChannels] }),
-    });
+    const res = await doFetch(options.tokenEndpoint, mintInit({ channels: [...initialChannels] }));
     if (!res.ok) {
       throw new Error(`talkback token endpoint answered ${res.status}`);
     }
@@ -205,12 +258,7 @@ export function createTalkback(options: TalkbackOptions): Talkback {
   }
 
   async function subscriptionToken(channel: string): Promise<string> {
-    const res = await doFetch(options.subscriptionTokenEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ channel }),
-    });
+    const res = await doFetch(options.subscriptionTokenEndpoint, mintInit({ channel }));
     if (!res.ok) {
       throw new Error(`talkback subscription token endpoint answered ${res.status} for ${channel}`);
     }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createFakeClient, envelope } from '../testing/fake-transport.js';
 import type { FakeTalkbackClient } from '../testing/fake-transport.js';
 import { createTalkback, defaultEndpoints } from './talkback.js';
@@ -267,5 +267,137 @@ describe('stopListening', () => {
     handle.stopListening('started');
     fake().emit('tenant:acme-eu.revenexx.integrations.run.started', envelope({ topic: 'revenexx.integrations.run.started', id: 'evt_2' }));
     expect(b).toEqual(['evt_1']);
+  });
+});
+
+/**
+ * Direct mode: the browser mints its own connection token at the facade instead of
+ * asking a BFF for one.
+ *
+ * It became possible when the facade started admitting an END USER at its mint
+ * endpoints — a role in the Zitadel user project, rather than the `talkback:write` a
+ * BFF's service identity holds. The end user may mint only for itself, which is what
+ * makes it safe and also why the request body stays exactly as it is: no `user_id`, so
+ * the facade fills it from the token's own `sub`.
+ */
+describe('direct mode', () => {
+  function build(opts: { accessToken?: () => string } = {}) {
+    const calls: Array<{ url: string; init: RequestInit }> = [];
+    let connectionToken!: () => Promise<string>;
+    let fake!: FakeTalkbackClient;
+
+    const tb = createTalkback({
+      host: 'https://rt.example',
+      tenant: () => 'revenexx',
+      userId: () => '364499920398320387',
+      tokenEndpoint: opts.accessToken ? 'https://rt.example/v1/tokens' : '/bff/talkback-token',
+      subscriptionTokenEndpoint: opts.accessToken ? 'https://rt.example/v1/subscription-tokens' : '/bff/talkback-subscription-token',
+      ...(opts.accessToken ? { accessToken: opts.accessToken } : {}),
+      fetch: (async (url: string, init: RequestInit) => {
+        calls.push({ url, init });
+        return new Response(JSON.stringify({ token: 'minted', expires_at: 0, channels: [] }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }) as unknown as typeof globalThis.fetch,
+      client: (_endpoints, o) => {
+        connectionToken = o.getToken;
+        fake = createFakeClient();
+        return fake;
+      },
+    });
+
+    /**
+     * A CHECKED accessor. tsconfig has noUncheckedIndexedAccess, and `calls[0]!` in
+     * every assertion would be a non-null assertion repeated fifteen times — this fails
+     * with the index it wanted instead, which is also a better message when a mint stops
+     * happening at all.
+     */
+    const callAt = (i: number) => {
+      const c = calls[i];
+      if (!c) throw new Error(`expected a fetch call at index ${i}, saw ${calls.length}`);
+      return c;
+    };
+    const callTo = (path: string) => {
+      const c = calls.find(x => x.url.includes(path));
+      if (!c) throw new Error(`no fetch call to ${path}`);
+      return c;
+    };
+
+    return { tb, calls, callAt, callTo, connectionToken: () => connectionToken(), fake: () => fake };
+  }
+
+  const headersOf = (init: RequestInit) => new Headers(init.headers as HeadersInit);
+
+  it('sends the access token as a bearer', async () => {
+    const { callAt, connectionToken } = build({ accessToken: () => 'jwt-abc' });
+
+    await connectionToken();
+
+    expect(callAt(0).url).toBe('https://rt.example/v1/tokens');
+    expect(headersOf(callAt(0).init).get('authorization')).toBe('Bearer jwt-abc');
+  });
+
+  /**
+   * The facade answers `Access-Control-Allow-Origin: *` and deliberately never sends
+   * `Access-Control-Allow-Credentials`, because storefronts run on per-tenant custom
+   * domains that cannot be enumerated. A browser REFUSES that combination with
+   * credentials mode on, so leaving `include` here would block the response even though
+   * the facade answered 200 — the least diagnosable failure available.
+   */
+  it('does not ask the browser to attach credentials', async () => {
+    const { callAt, connectionToken } = build({ accessToken: () => 'jwt-abc' });
+
+    await connectionToken();
+
+    expect(callAt(0).init.credentials).toBe('omit');
+  });
+
+  /**
+   * A BFF token route reads the tenant from the session; the facade reads it from the
+   * header, and answers 400 when a token authorises several tenants and none is named.
+   */
+  it('names the tenant, which the BFF used to do', async () => {
+    const { callAt, connectionToken } = build({ accessToken: () => 'jwt-abc' });
+
+    await connectionToken();
+
+    expect(headersOf(callAt(0).init).get('x-revenexx-tenant')).toBe('revenexx');
+  });
+
+  it('re-reads the provider on every mint, so a refreshed session is picked up', async () => {
+    let token = 'jwt-1';
+    const { callAt, connectionToken } = build({ accessToken: () => token });
+
+    await connectionToken();
+    token = 'jwt-2';
+    await connectionToken();
+
+    expect(headersOf(callAt(0).init).get('authorization')).toBe('Bearer jwt-1');
+    expect(headersOf(callAt(1).init).get('authorization')).toBe('Bearer jwt-2');
+  });
+
+  it('applies to subscription tokens too', async () => {
+    const { tb, calls, callTo } = build({ accessToken: () => 'jwt-abc' });
+
+    tb.stream('build-1').listen('line', () => {});
+    await vi.waitFor(() => expect(calls.some(c => c.url.includes('/v1/subscription-tokens'))).toBe(true));
+
+    const sub = callTo('/v1/subscription-tokens');
+    expect(headersOf(sub.init).get('authorization')).toBe('Bearer jwt-abc');
+    expect(headersOf(sub.init).get('x-revenexx-tenant')).toBe('revenexx');
+    expect(sub.init.credentials).toBe('omit');
+  });
+
+  /** The BFF path is untouched: a cookie session, and no bearer to send. */
+  it('leaves the BFF path on cookies with no bearer', async () => {
+    const { callAt, connectionToken } = build();
+
+    await connectionToken();
+
+    expect(callAt(0).url).toBe('/bff/talkback-token');
+    expect(callAt(0).init.credentials).toBe('include');
+    expect(headersOf(callAt(0).init).get('authorization')).toBeNull();
+    expect(headersOf(callAt(0).init).get('x-revenexx-tenant')).toBeNull();
   });
 });
