@@ -1,4 +1,4 @@
-import { onScopeDispose, provide, inject, isRef, unref, watch } from 'vue';
+import { onScopeDispose, provide, inject, isRef, ref, unref, watch } from 'vue';
 import type { InjectionKey, Ref } from 'vue';
 import type { Talkback } from '../core/talkback.js';
 import type { Envelope } from '../core/envelope.js';
@@ -97,7 +97,11 @@ interface BaseOptions {
  * channel behind.
  */
 function useChannel(tb: Talkback, resolveName: () => string | null, options: BaseOptions): ChannelSubscription {
-  const channel: Ref<string | null> = { value: null } as Ref<string | null>;
+  // A REAL ref, and the cast this replaced is why it needs saying. `{ value: null } as
+  // Ref` type-checks, satisfies every test that reads `.value` directly, and is dead in a
+  // template: no dependency is tracked, so a bound `sub.channel.value` renders once and
+  // never updates. The type said reactive and the object was not.
+  const channel = ref<string | null>(null);
   let handle: TalkbackHandle | null = null;
 
   function attach(): void {
