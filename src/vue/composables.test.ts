@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { effectScope, ref } from 'vue';
+import { effectScope, isRef, ref, watchEffect } from 'vue';
 import { createTalkback } from '../core/talkback.js';
 import type { Talkback } from '../core/talkback.js';
 import { createFakeClient, envelope } from '../testing/fake-transport.js';
@@ -82,6 +82,41 @@ describe('a route change swaps the channel instead of leaking one', () => {
 
     scope.stop();
     expect(tb.channels).toEqual([]);
+  });
+
+  /**
+   * REGRESSION. `channel` was a plain `{ value: null }` cast to `Ref`, and the cast is
+   * what hid it: the type said reactive, the object was not, and `ref` was never even
+   * imported from vue. Every subscription bookkeeping test above passed, because they
+   * read `.value` directly and a plain property read works fine.
+   *
+   * What breaks is the only thing the field exists for. A template binding
+   * `sub.channel.value` — which `playground/app/pages/index.vue` does, twice — renders
+   * the first value and never updates, and a `watch` on it never fires. So the assertion
+   * has to go through the reactivity system rather than read the property.
+   *
+   * `flush: 'sync'` so the effect's re-run is not a timing question.
+   */
+  it('exposes channel as a real ref, so a bound template updates', async () => {
+    const { tb } = harness();
+    const runId = ref('42');
+
+    const { scope, value: sub } = inScope(() => useTalkbackResource('revenexx.integrations.run', runId, { talkback: tb, handler: () => {} }));
+
+    // The mechanism, named directly: a cast Ref fails this.
+    expect(isRef(sub.channel)).toBe(true);
+
+    const seen: (string | null)[] = [];
+    scope.run(() => watchEffect(() => void seen.push(sub.channel.value), { flush: 'sync' }));
+    expect(seen).toEqual(['tenant:acme-eu.revenexx.integrations.run.42']);
+
+    runId.value = '43';
+    await Promise.resolve();
+
+    // The consequence: the effect re-ran because the channel changed.
+    expect(seen.at(-1)).toBe('tenant:acme-eu.revenexx.integrations.run.43');
+
+    scope.stop();
   });
 
   it('subscribes to nothing while the id is still empty', () => {
