@@ -12,8 +12,13 @@ export type Provider<T> = () => T;
 
 export interface TalkbackOptions {
   /**
-   * The Centrifugo base URL, e.g. `https://rt.revenexx.com`. It expands to the full
-   * fallback chain unless `endpoints` is given.
+   * The Centrifugo base URL, e.g. `https://talkback.revenexx.com`. It expands to the
+   * full fallback chain unless `endpoints` is given.
+   *
+   * This is the SAME origin the BFF passes to `createFacadeClient` as `baseUrl`.
+   * Centrifugo's client transport sits at the root and the facade API under `/v1`, so
+   * one host serves both and there is no separate realtime hostname. Pass no trailing
+   * path.
    */
   host: string;
 
