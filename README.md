@@ -88,6 +88,43 @@ dynamic path — one channel per request, for depth the client discovers at run 
 `createSubscriptionTokenRoute` are the framework-agnostic factories underneath; they take
 a request and a parsed body and return the response body.
 
+#### What `channelsFor` has to do, and what it cannot delegate
+
+`resolveUser` and `authorizeChannels` are the two callbacks this package deliberately
+refuses to answer, so they are also the two worth getting right before anything else.
+
+**Know exactly what the built-in check covers.** The route runs every requested channel
+through `parseAllWithin(requested, user.tenant)` before minting, so a channel belonging to
+another **tenant** is rejected without your code doing anything. That is where the
+protection stops. `user:<tenant>.<someoneElse>` parses perfectly well against the right
+tenant — so inside one tenant, nothing but `authorizeChannels` stands between a signed-in
+user and another user's channel.
+
+That is why it filters rather than validates:
+
+```ts
+function channelsFor(user: TalkbackUser, requested: readonly string[]): string[] {
+  const allowed = new Set([userChannel(user.tenant, user.userId).name]);
+  for (const topic of topicsVisibleTo(user)) {              // your authorisation, not ours
+    allowed.add(tenantActionChannel(user.tenant, topic).name);
+  }
+  return requested.filter(c => allowed.has(c));             // filter, never pass through
+}
+```
+
+Build the allow-set from the **verified** user with the builders from
+`@revenexx/talkback-js/channels` rather than by concatenating strings, and `filter` rather
+than reject — an unknown channel then drops silently instead of becoming a 400 that tempts
+the next person to loosen the check.
+
+**`playground/` is not a reference for either callback.** It returns a fixed user and
+authorises everything asked for, and says so loudly in its own source, because it has no
+identity provider in front of it. It demonstrates the client, not the authorisation.
+
+If your BFF has no server-side session — a Bearer-token SPA, say — then `resolveUser`
+verifies the incoming JWT against your issuer's JWKS and takes the user from the verified
+claims. What it must not do is read identity from anything the caller merely asserts.
+
 ### 2. Connect in the browser
 
 ```ts
