@@ -22,7 +22,12 @@ import type { TokenSource } from './m2m.js';
  */
 
 export interface FacadeOptions {
-  /** The facade base URL, e.g. `https://talkback.revenexx.com`. No trailing `/v1`. */
+  /**
+   * The facade base URL, e.g. `https://talkback.revenexx.com`. No trailing `/v1`.
+   *
+   * The same origin the browser client takes as `host` — Centrifugo's transport is at
+   * the root, this API is under `/v1`.
+   */
   baseUrl: string;
   tokens: TokenSource;
   /**

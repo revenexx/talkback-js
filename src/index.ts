@@ -3,7 +3,7 @@
  *
  * ```ts
  * const tb = createTalkback({
- *   host: 'https://rt.revenexx.com',
+ *   host: 'https://talkback.revenexx.com', // one host; Centrifugo at the root, /v1 is the facade
  *   tenant: () => tenantSlug.value,        // providers, not values
  *   userId: () => user.value.id,
  *   tokenEndpoint: '/bff/talkback-token',

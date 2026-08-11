@@ -94,7 +94,7 @@ a request and a parsed body and return the response body.
 import { createTalkback } from '@revenexx/talkback-js';
 
 const tb = createTalkback({
-  host: 'https://rt.revenexx.com',
+  host: 'https://talkback.revenexx.com', // the SAME host the BFF calls — see below
   tenant: () => tenantSlug.value,       // PROVIDERS, not values — both change at run time
   userId: () => user.value.id,
   tokenEndpoint: '/bff/talkback-token',
@@ -102,6 +102,11 @@ const tb = createTalkback({
 });
 tb.connect();
 ```
+
+**One host, two paths.** `host` here and `baseUrl` in the BFF snippet above are the same
+origin — Centrifugo's client transport sits at the root (`/connection/websocket` and its
+fallbacks) and the facade API sits under `/v1`. There is no separate realtime hostname to
+look up, and `host` takes no trailing `/v1`.
 
 One client per application. A second `createTalkback` opens a second WebSocket and mints
 its own connection token.
