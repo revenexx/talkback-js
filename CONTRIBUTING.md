@@ -80,6 +80,12 @@ the package carries one; `npx changeset --empty` covers a PR that intentionally 
 release. The `check` job runs `changeset status --since=origin/main`, so a missing
 changeset fails there rather than at release time.
 
+One thing about that command will waste your time otherwise: `--since` compares against
+git, not your working copy, so **the changeset has to be committed before the gate sees
+it**. Run it on an uncommitted changeset and it reports the same "no changesets were
+found" error as if you had written none. CI never hits this, because by then everything
+is a commit.
+
 On merge to `main`, `publish.yml` either opens or updates a "Version Packages" pull
 request, or — when no changesets are left — publishes to npm and pushes the tag. It runs
 under a GitHub App token rather than `GITHUB_TOKEN`, and that is load-bearing: pull
