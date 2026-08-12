@@ -1,5 +1,78 @@
 # @revenexx/talkback-js
 
+## 0.2.0
+
+### Minor Changes
+
+- be24b3f: Add `accessToken`, so a browser can mint its own token at the facade with no BFF route.
+
+  The facade now admits an **end user** at its mint endpoints — a `user` or `admin` role in
+  the Zitadel user project, rather than the `talkback:write` a BFF's service identity holds.
+  Such a caller may mint only for itself, which is what makes it safe from a browser. The
+  package could not express that: `tokenEndpoint` was just a URL and there was no way to send
+  an `Authorization` header at all, so the direct path existed on the server and was
+  unreachable from here.
+
+  Setting `accessToken` switches the mint request rather than only adding a header, because
+  three things change together and getting one of them wrong fails in a way that is hard to
+  read:
+
+  - the token goes out as `Authorization: Bearer`;
+  - the tenant goes out as `X-Revenexx-Tenant`, which the BFF route used to do — the facade
+    answers **400** when a token authorises several tenants and none is named;
+  - `credentials` becomes `omit`. The facade answers `Access-Control-Allow-Origin: *` and
+    deliberately never sends `Access-Control-Allow-Credentials`, because storefronts run on
+    per-tenant custom domains that cannot be enumerated. A browser refuses that combination
+    with credentials mode on, so the previous `include` would have blocked the response even
+    though the facade answered 200.
+
+  It is a provider like `tenant` and `userId`, not a value: a connection token is minted
+  again on every reconnect and every `expire_at`, so a token read once at construction goes
+  stale in exactly the long-lived dashboard this package is for.
+
+  **The BFF path is unchanged** — same cookie session, no bearer, `credentials: 'include'` —
+  and remains the only way to mint on behalf of somebody else, to decide a token's contents
+  server-side, or to serve a visitor with no platform login. Both paths are covered by tests
+  asserting the request each one actually sends.
+
+### Patch Changes
+
+- 389dc35: Document what `authorizeChannels` has to do, and precisely what the built-in check does
+  not cover.
+
+  The Quickstart already warned that `requested` is a hint rather than a grant, but it never
+  said where the package's own protection stops. `createTokenRoute` runs
+  `parseAllWithin(requested, user.tenant)` before minting, so a channel in another **tenant**
+  is rejected for you — and that is the whole extent of it. `user:<tenant>.<someoneElse>`
+  parses correctly against the right tenant, so within one tenant nothing but
+  `authorizeChannels` separates a signed-in user from another user's channel.
+
+  Adds that boundary, a filtering sketch built from the `/channels` builders, a note that
+  `playground/` is deliberately not a reference for `resolveUser` or `authorizeChannels`, and
+  a line on what `resolveUser` does in a BFF with no server-side session.
+
+  Documentation only; the README ships in the tarball.
+
+- c17057d: Fix `ChannelSubscription.channel`, which was typed as a `Ref` but was not reactive.
+
+  `useChannel` created it as `{ value: null } as Ref<string | null>` — a plain object with a
+  cast. `ref` was never imported from `vue`. The type checked, and every existing test
+  passed because they read `.value` directly, where a plain property read behaves
+  identically.
+
+  What was broken is the only thing the field is for. A template binding
+  `sub.channel.value` rendered the first value and never updated, and a `watch` on it never
+  fired — including in `playground/app/pages/index.vue`, which binds it twice. Consumers
+  saw a channel name freeze after the first subscription while the underlying subscription
+  correctly followed its reactive arguments.
+
+  It is now `ref<string | null>(null)`. No API or type change: `channel` was always declared
+  as `Ref<string | null>` and now actually is one, so a consumer already wrapping it in a
+  `computed` as a workaround keeps working.
+
+  Reported by the `studio-shared` integration, which found it while reading the source
+  rather than by hitting it — the failure is silent.
+
 ## 0.1.3
 
 ### Patch Changes
