@@ -401,3 +401,78 @@ describe('direct mode', () => {
     expect(headersOf(callAt(0).init).get('x-revenexx-tenant')).toBeNull();
   });
 });
+
+/**
+ * The provider may be ASYNC and may answer null, because the only real consumer's is
+ * both: the cockpit's `getToken(): () => Promise<string | null>` refreshes through an
+ * OIDC library, and answers null before the first sign-in completes.
+ *
+ * A sync, non-nullable provider would have forced every such host to keep wrapping
+ * `fetch` by hand — which is exactly the workaround this option exists to remove.
+ */
+describe('direct mode with an async or empty provider', () => {
+  function build(accessToken: () => string | null | Promise<string | null>) {
+    const calls: Array<{ url: string; init: RequestInit }> = [];
+    let connectionToken!: () => Promise<string>;
+
+    createTalkback({
+      host: 'https://rt.example',
+      tenant: () => 'revenexx',
+      userId: () => 'u1',
+      tokenEndpoint: 'https://rt.example/v1/tokens',
+      subscriptionTokenEndpoint: 'https://rt.example/v1/subscription-tokens',
+      accessToken,
+      fetch: (async (url: string, init: RequestInit) => {
+        calls.push({ url, init });
+        return new Response(JSON.stringify({ token: 'minted' }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }) as unknown as typeof globalThis.fetch,
+      client: (_endpoints, o) => {
+        connectionToken = o.getToken;
+        return createFakeClient();
+      },
+    });
+
+    const callAt = (i: number) => {
+      const c = calls[i];
+      if (!c) throw new Error(`expected a fetch call at index ${i}, saw ${calls.length}`);
+      return c;
+    };
+    return { callAt, connectionToken: () => connectionToken() };
+  }
+
+  const headersOf = (init: RequestInit) => new Headers(init.headers as HeadersInit);
+
+  it('awaits a promise', async () => {
+    const { callAt, connectionToken } = build(async () => 'jwt-async');
+
+    await connectionToken();
+
+    expect(headersOf(callAt(0).init).get('authorization')).toBe('Bearer jwt-async');
+  });
+
+  /**
+   * No token yet is not an error here. The request goes out without a bearer and the
+   * server answers 401, which is what a provider watching for sign-in reacts to —
+   * throwing instead would turn "not signed in yet" into a broken client.
+   */
+  it('sends no bearer when the provider has no token yet', async () => {
+    const { callAt, connectionToken } = build(async () => null);
+
+    await connectionToken();
+
+    expect(headersOf(callAt(0).init).get('authorization')).toBeNull();
+  });
+
+  /** Direct mode is decided by the OPTION being set, not by what it resolves to. */
+  it('still omits credentials and names the tenant with no token', async () => {
+    const { callAt, connectionToken } = build(async () => null);
+
+    await connectionToken();
+
+    expect(callAt(0).init.credentials).toBe('omit');
+    expect(headersOf(callAt(0).init).get('x-revenexx-tenant')).toBe('revenexx');
+  });
+});

@@ -176,6 +176,17 @@ out as `Authorization: Bearer`, the tenant as `X-Revenexx-Tenant` — which the 
 do — and `credentials` becomes `omit`, because the facade allows every origin and a
 browser refuses credentials mode against a wildcard origin.
 
+The provider may be **async and may answer `null`**: `() => Promise<string | null>` is
+accepted, which is what an OIDC token source actually looks like. No token yet sends the
+request without a bearer rather than throwing, so "not signed in" arrives as the server's
+401 instead of a broken client.
+
+> **Also useful without the facade.** If your own token route is bearer-authenticated
+> rather than cookie-authenticated — a Nitro with no server-side session — point the two
+> endpoints at *your* route and pass `accessToken` anyway. The bearer and the tenant header
+> go there, and `credentials: 'omit'` costs you nothing because there is no session cookie.
+> That replaces wrapping `fetch` yourself to attach the header.
+
 **What the facade allows an end user, and what it does not.** It mints **only for the
 caller itself**: the request carries no `user_id` and the facade fills it from the token's
 own `sub`, so naming somebody else is a 403. `roles`, `info` and `override` are refused —

@@ -58,12 +58,27 @@ export interface TalkbackOptions {
    * reconnect and every `expire_at` — read once at construction it would go stale in
    * exactly the long-lived dashboard this package exists for.
    *
+   * ASYNC AND NULLABLE, because a real token source is both. An OIDC library refreshes
+   * over the network, and there is no token at all until sign-in completes — a provider
+   * that had to answer a `string` synchronously would force every such host to keep
+   * wrapping `fetch` by hand, which is the workaround this option exists to remove.
+   *
+   * Resolving to null or '' sends the request WITHOUT a bearer rather than throwing: "not
+   * signed in yet" then surfaces as the server's 401, which is what a provider watching
+   * for sign-in reacts to. Note that direct mode is decided by this option being SET, not
+   * by what it resolves to — the tenant header and `credentials: 'omit'` apply either way.
+   *
    * WHEN TO USE WHICH. Direct mode needs the user to hold a platform login, so a
    * storefront visitor keeps the BFF. A BFF is also the only way to mint on behalf of
    * SOMEBODY ELSE, and the only place to decide a token's contents server-side — an end
    * user is refused `roles`, `info` and `override`.
+   *
+   * It is ALSO the seam for a host whose own token route is bearer-authenticated rather
+   * than cookie-authenticated: point the endpoints at that route and the bearer goes
+   * there instead. `credentials: 'omit'` costs such a host nothing, because it has no
+   * session cookie to send.
    */
-  accessToken?: Provider<string>;
+  accessToken?: Provider<string | null | Promise<string | null>>;
 
   /**
    * Channels to carry in the connection token's `subs` claim, so they are subscribed on
@@ -233,20 +248,26 @@ export function createTalkback(options: TalkbackOptions): Talkback {
    * from `X-Revenexx-Tenant` and answers 400 when a token authorises several and none is
    * named, so sending it is not optional for a multi-tenant user.
    */
-  function mintInit(body: unknown): RequestInit {
+  async function mintInit(body: unknown): Promise<RequestInit> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     const init: RequestInit = { method: 'POST', body: JSON.stringify(body), headers };
 
     if (!options.accessToken) {
       return { ...init, credentials: 'include' };
     }
-    headers.Authorization = `Bearer ${options.accessToken()}`;
+    // Awaited, and a missing token is not an error — see the option's doc comment. The
+    // MODE is decided by the option being set, so the tenant header and `omit` apply even
+    // when there is nothing to send yet.
+    const token = await options.accessToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
     headers['X-Revenexx-Tenant'] = options.tenant();
     return { ...init, credentials: 'omit' };
   }
 
   async function connectionToken(): Promise<string> {
-    const res = await doFetch(options.tokenEndpoint, mintInit({ channels: [...initialChannels] }));
+    const res = await doFetch(options.tokenEndpoint, await mintInit({ channels: [...initialChannels] }));
     if (!res.ok) {
       throw new Error(`talkback token endpoint answered ${res.status}`);
     }
@@ -258,7 +279,7 @@ export function createTalkback(options: TalkbackOptions): Talkback {
   }
 
   async function subscriptionToken(channel: string): Promise<string> {
-    const res = await doFetch(options.subscriptionTokenEndpoint, mintInit({ channel }));
+    const res = await doFetch(options.subscriptionTokenEndpoint, await mintInit({ channel }));
     if (!res.ok) {
       throw new Error(`talkback subscription token endpoint answered ${res.status} for ${channel}`);
     }
