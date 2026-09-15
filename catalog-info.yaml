@@ -6,6 +6,7 @@ metadata:
   description: "The client half of the Talkback contract — the channel grammar, a facade client, a BFF token route factory, an Echo-shaped browser client and Vue composables."
   annotations:
     github.com/project-slug: revenexx/talkback-js
+    backstage.io/techdocs-ref: url:https://github.com/revenexx/talkback-js/tree/main/
   tags:
     - typescript
     - realtime
@@ -25,3 +26,10 @@ spec:
   owner: group:default/platform-team
   system: revenue-cloud
   lifecycle: production
+  # The facade API, provided by the service half (revenexx/talkback). This package IS
+  # its client: mintToken, mintSubscriptionToken, publish, presence, presenceStats and
+  # history all go to /v1 there. It consumes nothing else — the `revenexx.integrations.*`
+  # strings in the tests are example TOPICS from the ADR-0093 taxonomy, not a dependency
+  # on the integrations service.
+  consumesApis:
+    - talkback-facade
