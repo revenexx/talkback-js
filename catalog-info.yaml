@@ -1,0 +1,35 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: talkback-js
+  title: Talkback JS
+  description: "The client half of the Talkback contract — the channel grammar, a facade client, a BFF token route factory, an Echo-shaped browser client and Vue composables."
+  annotations:
+    github.com/project-slug: revenexx/talkback-js
+    backstage.io/techdocs-ref: url:https://github.com/revenexx/talkback-js/tree/main/
+  tags:
+    - typescript
+    - realtime
+    - centrifugo
+    - websocket
+    - vue
+  links:
+    - url: https://www.npmjs.com/package/@revenexx/talkback-js
+      title: npm
+      icon: code
+spec:
+  type: library
+  # The client half of ADR-0093, and `platform-team` is what the service half
+  # (component:default/talkback) names — the two are one contract and should not
+  # show two owners. Note the org spells this team both ways; `platform` and
+  # `platform-team` are separate Groups in the backstage org.yaml and both resolve.
+  owner: group:default/platform-team
+  system: revenue-cloud
+  lifecycle: production
+  # The facade API, provided by the service half (revenexx/talkback). This package IS
+  # its client: mintToken, mintSubscriptionToken, publish, presence, presenceStats and
+  # history all go to /v1 there. It consumes nothing else — the `revenexx.integrations.*`
+  # strings in the tests are example TOPICS from the ADR-0093 taxonomy, not a dependency
+  # on the integrations service.
+  consumesApis:
+    - talkback-facade

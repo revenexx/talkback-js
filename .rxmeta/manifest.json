@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "project": "talkback-js",
+  "entities": [
+    {
+      "kind": "Library",
+      "id": "talkback-js",
+      "name": "Talkback JS",
+      "description": "The client half of the Talkback contract: the channel grammar, a facade client, a BFF token route factory, an Echo-shaped browser client and Vue composables. See atlas ADR-0093.",
+      "lifecycle": "production",
+      "team": "platform",
+      "category": "component",
+      "group": "talkback",
+      "tech": ["typescript", "realtime", "centrifugo", "websocket", "vue"],
+      "links": {
+        "github": "https://github.com/revenexx/talkback-js",
+        "npm": "https://www.npmjs.com/package/@revenexx/talkback-js"
+      }
+    }
+  ]
+}

@@ -30,10 +30,11 @@ function build(overrides: { tenant?: () => string; channels?: string[] } = {}) {
 
 describe('the transport chain is the default, not an opt-in', () => {
   /**
-   * T0.2 — whether BunkerWeb and Traefik pass a WebSocket upgrade — is still open, and
    * ADR-0093 §8 names SSE and HTTP streaming as the mitigation for an edge that will
-   * not. Both are already enabled server-side. A client that had to opt in would mean
-   * four applications each discovering that the hard way.
+   * not pass a WebSocket upgrade — T0.2's question, settled for our edge by the
+   * deployment but not for every proxy in front of a browser. Both are enabled
+   * server-side. A client that had to opt in would mean four applications each
+   * discovering that the hard way.
    */
   it('expands a host into websocket, http_stream and sse', () => {
     expect(defaultEndpoints('https://rt.example/')).toEqual([
