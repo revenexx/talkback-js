@@ -23,7 +23,7 @@ spec:
   # (component:default/talkback) names — the two are one contract and should not
   # show two owners. Note the org spells this team both ways; `platform` and
   # `platform-team` are separate Groups in the backstage org.yaml and both resolve.
-  owner: group:default/platform-team
+  owner: group:default/product-engineering
   system: revenue-cloud
   lifecycle: production
   # The facade API, provided by the service half (revenexx/talkback). This package IS
