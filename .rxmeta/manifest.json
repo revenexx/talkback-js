@@ -6,6 +6,7 @@
       "kind": "Library",
       "id": "talkback-js",
       "name": "Talkback JS",
+      "icon": ".rxmeta/icon.svg",
       "description": "The client half of the Talkback contract: the channel grammar, a facade client, a BFF token route factory, an Echo-shaped browser client and Vue composables. See atlas ADR-0093.",
       "lifecycle": "production",
       "team": "platform",
