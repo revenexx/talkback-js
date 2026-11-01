@@ -1,20 +1,19 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.8/schema.json",
   "files": {
-    "ignore": [
-      ".vitest-cache",
-      "coverage",
-      "dist",
-      "node_modules",
-      "playground/.nuxt",
-      "playground/.output",
-      "playground/node_modules",
-      "src/testing/channel-vectors.json"
+    "includes": [
+      "**",
+      "!**/.vitest-cache",
+      "!**/coverage",
+      "!**/dist",
+      "!**/node_modules",
+      "!**/playground/.nuxt",
+      "!**/playground/.output",
+      "!**/playground/node_modules",
+      "!**/src/testing/channel-vectors.json"
     ]
   },
-  "organizeImports": {
-    "enabled": false
-  },
+  "assist": { "actions": { "source": { "organizeImports": "off" } } },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -32,7 +31,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "style": {
         "useImportType": "off",
         "noNonNullAssertion": "off",

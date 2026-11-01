@@ -128,11 +128,7 @@ export interface SubscriptionRouteOptions<Req> {
   facade: FacadeClient;
   resolveUser(request: Req): Promise<TalkbackUser> | TalkbackUser;
   /** REQUIRED. Return false and the route answers 403. */
-  authorizeChannel(ctx: {
-    request: Req;
-    user: TalkbackUser;
-    channel: string;
-  }): Promise<boolean> | boolean;
+  authorizeChannel(ctx: { request: Req; user: TalkbackUser; channel: string }): Promise<boolean> | boolean;
 }
 
 export function createSubscriptionTokenRoute<Req>(options: SubscriptionRouteOptions<Req>) {

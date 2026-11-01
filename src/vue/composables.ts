@@ -1,7 +1,6 @@
 import { onScopeDispose, provide, inject, isRef, ref, unref, watch } from 'vue';
 import type { InjectionKey, Ref } from 'vue';
 import type { Talkback } from '../core/talkback.js';
-import type { Envelope } from '../core/envelope.js';
 import type { EnvelopeListener, RawListener, ResyncContext, TalkbackHandle } from '../core/handles.js';
 import { presenceFor, streamChannel, tenantActionChannel, tenantChannel, tenantResourceChannel, userChannel } from '../channels/index.js';
 
