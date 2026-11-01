@@ -1,0 +1,17 @@
+site_name: Talkback JS
+site_description: The client half of the Talkback contract — the channel grammar, a facade client, BFF token routes, an Echo-shaped browser client and Vue composables.
+repo_url: https://github.com/revenexx/talkback-js
+docs_dir: docs
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Channels: channels.md
+  - API Reference: api.md
+  - Testing: testing.md
+
+theme:
+  name: material
+
+plugins:
+  - techdocs-core

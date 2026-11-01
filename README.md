@@ -516,9 +516,8 @@ half is Go, in the private repository `revenexx/talkback`. The 52 grammar vector
 `src/testing/channel-vectors.json` are **generated there** from the vector table in
 `internal/channels/channels_test.go`; the copy in this repository is vendored.
 
-The intent is for a CI job in `revenexx/talkback` to check this repository out, compare
-both copies byte for byte, and run its Go constants against the regexes in
-`src/channels/grammar.ts` — so a change to the grammar made only here fails there, not
-here. That job is not wired up yet; until it is, treat the vendored copies as
-authoritative only once the Go side has produced them, and start grammar changes on the
-Go side regardless.
+That clamp is wired up and runs on the Go side: `internal/channels/ts_clamp_test.go`
+checks this repository out, compares both copies byte for byte, and runs its Go constants
+against the regexes in `src/channels/grammar.ts`. It is the `js clamp (talkback-js@main)`
+job in that repository's CI, so a change to the grammar made only here fails **there**,
+not here. Start grammar changes on the Go side.

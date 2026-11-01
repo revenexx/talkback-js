@@ -120,11 +120,12 @@ export interface TalkbackOptions {
 /**
  * The three transports, in the order Centrifuge should try them.
  *
- * NOT OPT-IN, and that is a policy decision rather than a convenience. T0.2 — whether
- * BunkerWeb and Traefik pass a WebSocket upgrade at all — is still open, and ADR-0093 §8
- * names SSE and HTTP streaming as exactly the mitigation for an edge that will not
- * upgrade. Both are already enabled in `centrifugo/config.yaml`, where they are off by
- * default in Centrifugo, with the same reasoning written down.
+ * NOT OPT-IN, and that is a policy decision rather than a convenience. ADR-0093 §8 names
+ * SSE and HTTP streaming as exactly the mitigation for an edge that will not upgrade —
+ * the question T0.2 asked of BunkerWeb and Traefik, and which the deployment settled.
+ * It settled it for OUR edge, not for every proxy between a browser and it, so the
+ * fallbacks stay on. Both are already enabled in `centrifugo/config.yaml`, where they
+ * are off by default in Centrifugo, with the same reasoning written down.
  */
 export function defaultEndpoints(host: string): TransportEndpoint[] {
   const base = host.replace(/\/+$/, '');
