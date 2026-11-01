@@ -80,11 +80,11 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.8",
     "@changesets/cli": "^2.31.0",
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.6.6",
     "centrifuge": "^5.4.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
-    "vitest": "^2.1.0",
+    "vitest": "^5.0.5",
     "vue": "^3.5.0"
   },
   "engines": {
