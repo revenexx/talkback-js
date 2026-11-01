@@ -204,7 +204,7 @@ describe('the override wrapper', () => {
       override: { presence: { value: true } },
     });
 
-    expect((calls[0]?.body as { override: unknown }).override).toEqual({
+    expect((calls[0]!.body as { override: unknown }).override).toEqual({
       presence: { value: true },
     });
   });
