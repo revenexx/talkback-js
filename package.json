@@ -79,7 +79,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.8",
-    "@changesets/cli": "^2.31.0",
+    "@changesets/cli": "^3.0.3",
     "@types/node": "^26.6.6",
     "centrifuge": "^5.4.0",
     "tsup": "^8.0.0",
