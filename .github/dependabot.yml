@@ -25,6 +25,12 @@ updates:
     commit-message:
       prefix: "build"
     open-pull-requests-limit: 5
+    ignore:
+      # TypeScript 7 breaks tsup's declaration build ("Cannot read properties of
+      # undefined (reading 'useCaseSensitiveFileNames')", #8). Lifted when tsup
+      # supports TypeScript 7.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       # THE IMPORTANT ONE. These three are simultaneously devDependencies and
       # peerDependencies, and the two roles pull in different directions. The

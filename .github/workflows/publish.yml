@@ -63,8 +63,9 @@ jobs:
       - run: npm run build
 
       - name: Create release PR or publish
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          publish: npm run release
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          # v2: `publish` is `publish-script`, and a custom token goes through
+          # `github-token` — the GITHUB_TOKEN env no longer reaches the action.
+          publish-script: npm run release
+          github-token: ${{ steps.app-token.outputs.token }}
