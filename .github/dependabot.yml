@@ -45,6 +45,9 @@ updates:
       #   centrifuge — the transport and the token contract
       #   vue        — the reactivity model the composables are written against
       #   vitest     — the test toolchain, and currently the fix for five advisories
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
       peers:
         patterns:
           - "centrifuge"
@@ -89,6 +92,9 @@ updates:
       prefix: "build"
     open-pull-requests-limit: 3
     groups:
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
       playground:
         patterns:
           - "*"
@@ -114,6 +120,9 @@ updates:
       prefix: "cicd"
     open-pull-requests-limit: 3
     groups:
+      actions-security:
+        applies-to: security-updates
+        patterns: ["*"]
       actions:
         patterns:
           - "*"
