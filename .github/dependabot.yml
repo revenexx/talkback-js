@@ -32,6 +32,9 @@ updates:
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
     groups:
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
       # THE IMPORTANT ONE. These three are simultaneously devDependencies and
       # peerDependencies, and the two roles pull in different directions. The
       # devDependency is what the suite tests against; the peer range is what consumers
@@ -89,6 +92,9 @@ updates:
       prefix: "build"
     open-pull-requests-limit: 3
     groups:
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
       playground:
         patterns:
           - "*"
@@ -114,6 +120,9 @@ updates:
       prefix: "cicd"
     open-pull-requests-limit: 3
     groups:
+      actions-security:
+        applies-to: security-updates
+        patterns: ["*"]
       actions:
         patterns:
           - "*"
